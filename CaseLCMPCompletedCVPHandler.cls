@@ -83,6 +83,7 @@ Public static void populateHighRiskCVP( String name, ID caseId ){
 }
 
 //Method for Lightning-Acordtion structure with check box.
+    /*
 @auraEnabled (cacheable = true)
 Public static List<AccountContactRelation> getACR( String caseId ){
     
@@ -131,6 +132,6 @@ Public static List<FinServ__ContactContactRelation__c> getCCR( String caseId ){
     return  [ SELECT Id, FinServ__Contact__c,FinServ__Contact__r.name, FinServ__RelatedContact__c 
                 FROM FinServ__ContactContactRelation__c
                 WHERE FinServ__RelatedContact__c in: contactSet ];
-}
+}*/
 
 }
