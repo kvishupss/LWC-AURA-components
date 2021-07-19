@@ -8,7 +8,7 @@
  * Ver   Date         Author              Modification
  * 1.0   07-17-2021   mohsin.hassan@gravitai.com   Initial Version
  **/
-public with sharing class CaseLCMPCompletedCVPHandler {
+/*public with sharing class CaseLCMPCompletedCVPHandler {
 
 // Method for Lightning-Tree structure component.
 @auraEnabled (cacheable = true)
@@ -59,7 +59,7 @@ Public static List<items> getAccRelationship( String caseId ){
     System.debug('finalWrap-->' + finalWrap);   
     return finalWrap;  
     
-}    
+} */   
 @auraEnabled
 // Populating High Risk CVP field with the clicked Id.
 Public static void populateHighRiskCVP( String name, ID caseId ){
