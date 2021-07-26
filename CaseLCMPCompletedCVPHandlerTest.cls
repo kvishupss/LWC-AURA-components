@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : mohsin.hassan@gravitai.com
  * @group             :
- * @last modified on  : 07-17-2021
+ * @last modified on  : 07-23-2021
  * @last modified by  : Mohsin Hassan
  * Modifications Log
  * Ver   Date         Author              Modification
@@ -11,71 +11,85 @@
 
 @isTest
 Public class CaseLCMPCompletedCVPHandlerTest {
+    
+    @TestSetup
+    static void setUpTestFData() {
+        List<Account> householdAccounts = TestDataFactory.createHouseHoldAccounts(
+            Constants.RT_ACC_HOUSEHOLD,
+            1
+        );
+        insert householdAccounts;
+        
+        List<Account> personAccounts = TestDataFactory.createPersonAccounts(
+            Constants.RT_ACC_PERSON_ACCOUNT,
+            1
+        );
+        insert personAccounts;
+        
+        List<FinServ__ReciprocalRole__c> rrList =TestDataFactory.createReciprocalRole(
+            Constants.RT_RR_ACCOUNT_ROLE , 1);
+        insert rrList;
+
+        List<FinServ__AccountAccountRelation__c> aarList = TestDataFactory.addRelatedAccounts(personAccounts, rrList[0]);
+        insert aarList;
+        
+        List<FinServ__AccountAccountRelation__c> householdaarList = TestDataFactory.addRelatedAccounts(householdAccounts, rrList[0]);
+        insert householdaarList;
+        
+        Contact con = TestDataFactory.createContact( 'Test Contact', null );
+        insert con;
+        
+        List<Case> transactCases = TestDataFactory.createTransactCases( 
+                                    personAccounts[0].Id,
+                                    [SELECT Id FROM Contact WHERE AccountId = :personAccounts[0].Id].Id,
+                                    1,true);
+        List<Case> transactCaseshh = TestDataFactory.createTransactCases( 
+                                    householdAccounts[0].Id,
+                                    con.Id,
+                                    1,true);
+        
+    }
   
   @isTest
-  static void testAccount(){
-      Account acc = new Account();
-      acc.firstName = 'Test';
-      acc.lastName = 'Boss';
-      acc.RecordTypeId = Schema.getGlobalDescribe().get('Account').getDescribe().getRecordTypeInfosByName().get('Person Account').getRecordTypeId();
-      acc.PersonMailingState = 'RG';
-      acc.PersonMailingPostalCode = '2055';
-      insert acc;
-      
-      Account acc1 = new Account();
-      acc1.firstName = 'Test1';
-      acc1.lastName = 'Ben1';
-      acc1.RecordTypeId = Schema.getGlobalDescribe().get('Account').getDescribe().getRecordTypeInfosByName().get('Person Account').getRecordTypeId();
-      acc1.PersonMailingState = 'RG1';
-      acc1.PersonMailingPostalCode = '20861';
-      insert acc1;
-      
-      contact con = new contact();
-      con.LastName = 'Test';
-      con.AccountId = acc1.Id;
-      //insert con;
-      
-      AccountContactRelation acr = new AccountContactRelation(); 
-      acr.ContactId = acc1.PersonContactId;
-      acr.AccountId = acc.Id;
-      //insert acr;
-      FinServ__ReciprocalRole__c rr = new FinServ__ReciprocalRole__c();
-      rr.FinServ__InverseRole__c = 'Test Inverse Role';
-      rr.Name = 'Test Role';
-      rr.RecordTypeId = Schema.getGlobalDescribe().get('FinServ__ReciprocalRole__c').getDescribe().getRecordTypeInfosByName().get('Account Role').getRecordTypeId();
-      insert rr;
-      
-      FinServ__ReciprocalRole__c rrCon = new FinServ__ReciprocalRole__c();
-      rrCon.FinServ__InverseRole__c = 'Test Inverse Role';
-      rrCon.Name = 'Test Role';
-      rrCon.RecordTypeId = Schema.getGlobalDescribe().get('FinServ__ReciprocalRole__c').getDescribe().getRecordTypeInfosByName().get('Contact Role').getRecordTypeId();
-      insert rrCon;
-      
-      FinServ__AccountAccountRelation__c aar = new FinServ__AccountAccountRelation__c();
-      aar.FinServ__RelatedAccount__c = acc1.Id;
-      aar.FinServ__Role__c = rr.Id;
-      insert aar;
-      
-      //Finserv_ContactContactRelation__c ccr = new Finserv_ContactContactRelation__c();
-      //ccr.FinServ__RelatedAccount__r.name = 'Test Jo';
-      //ccr.FinServ__Role__c = rrCon.Id;
-      //insert ccr;
+  static void testPersonAccountCVP(){
+    
      
-      Case c = new Case();
-      c.AccountId = acc.Id;
-      c.recordTypeId =  Schema.SObjectType.Case.getRecordTypeInfosByName().get('Transact').getRecordTypeId();
-      c.Type = 'Advice';
-      c.Origin = 'Phone';
-      c.Status = 'In Progress';
-      c.contactId = acc.PersonContactId;
-      insert c;
-      
-      CaseLCMPCompletedCVPHandler.getAccRelationship(c.Id);
-      CaseLCMPCompletedCVPHandler.populateHighRiskCVP(acc.PersonContactId, c.Id);
+    Id householdRecordTypeId = TestUtils.getRecordTypeId('Account', Constants.RT_ACC_HOUSEHOLD);
+    Id personAccountRecordTypeId = TestUtils.getRecordTypeId('Account', Constants.RT_ACC_PERSON_ACCOUNT);
+    Account personAccount = [SELECT Id,PersonContactId FROM Account WHERE RecordTypeId = :personAccountRecordTypeId LIMIT 1];
+    system.assert(personAccount.Id != null, 'A Person Account');
+    Case c = [select id from case where Account.RecordTypeId =:personAccountRecordTypeId limit 1 ];
+    system.assert(c.Id != null, 'Person Account associated with Case');
+
+    test.startTest(); 
+      CaseLCMPCompletedCVPHandler.populateHighRiskCVP(personAccount.PersonContactId, c.Id);
+    test.stopTest();
+
+    
       CaseLCMPCompletedCVPHandler.getACR(c.Id);
       CaseLCMPCompletedCVPHandler.getAAR(c.Id);
       CaseLCMPCompletedCVPHandler.getCCR(c.Id);
-   
+     
   }
+     @isTest
+  static void testHouseHoldAccountCVP(){
+
+      Id householdRecordTypeId = TestUtils.getRecordTypeId('Account', Constants.RT_ACC_HOUSEHOLD);
+      Account householdAccount = [SELECT Id,PersonContactId FROM Account WHERE RecordTypeId = :householdRecordTypeId LIMIT 1];
+      Case c = [select id from Case where Account.RecordTypeId =:householdRecordTypeId limit 1 ];
+      system.assert(c.Id != null, 'Household Account associated with Case');
+      Contact con = [SELECT Id FROM Contact limit 1];
+      system.assert(con.id !=null, 'Contact');
+
+      test.startTest();
+      CaseLCMPCompletedCVPHandler.populateHighRiskCVP(con.Id, c.Id);
+      test.stopTest();
+
+      CaseLCMPCompletedCVPHandler.getACR(c.Id);
+      CaseLCMPCompletedCVPHandler.getAAR(c.Id);
+      CaseLCMPCompletedCVPHandler.getCCR(c.Id);
+      
+
+  } 
 
 }
