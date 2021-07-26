@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>SPW_High_Risk_CVP__c</fullName>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <description>Populating and associating the account related data for &quot;High Risk CVP with&quot;, by checking child values of &quot;caseCVPcompletedWith&quot; LWC component.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>To associate with the related account hierarchy, click on the available checkbox on &quot;High Risk CVP completed with&quot;.</inlineHelpText>
+    <label>High Risk CVP (Account)</label>
+    <referenceTo>Account</referenceTo>
+    <relationshipLabel>Cases (High Risk CVP )</relationshipLabel>
+    <relationshipName>Cases</relationshipName>
+    <required>false</required>
+    <trackFeedHistory>false</trackFeedHistory>
+    <trackHistory>false</trackHistory>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>
