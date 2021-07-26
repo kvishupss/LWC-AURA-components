@@ -6,7 +6,7 @@
  * @last modified by  : Mohsin Hassan
  * Modifications Log
  * Ver   Date         Author              Modification
- * 1.0   07-17-2021   mohsin.hassan@gravitai.com   Initial Version
+ * 1.0   07-22-2021   mohsin.hassan@gravitai.com   Initial Version
 */
 import { LightningElement, api, wire, track } from 'lwc';
 import getACR from "@salesforce/apex/CaseLCMPCompletedCVPHandler.getACR";
@@ -30,14 +30,14 @@ export default class AccordionLWC extends LightningElement {
     connectedCallback(){
         getACR({ caseId: this.recordId })
         .then((result) => {
-            console.log('result ',result);
+            console.log('result acr ',JSON.stringify(result) );
             this.items = result;
-            this.accName = result[0].Account.Name;
+            this.accName = result[0].accname;
             this.error = undefined;
         })
         .catch((error) => {
             console.log('error ',error);
-            this.error = error;
+           this.error = undefined;
             this.items = undefined;
         });
 
@@ -49,7 +49,7 @@ export default class AccordionLWC extends LightningElement {
         })
         .catch((error) => {
             console.log('error ',error);
-            this.error = error;
+            this.error = undefined;
             this.aar = undefined;
         });
 
@@ -61,7 +61,7 @@ export default class AccordionLWC extends LightningElement {
         })
         .catch((error) => {
             console.log('error ',error);
-            this.error = error;
+            this.error = undefined;
             this.ccr = undefined;
         });
     }
